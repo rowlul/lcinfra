@@ -19,6 +19,7 @@
     mode: '0644'
   with_fileglob:
     - ../templates/*.j2
+    - ../templates/.*.j2
   loop_control:
     loop_var: file
 

@@ -8,8 +8,6 @@ services:
     hostname: root.mirror
     volumes:
       - {{ mirror_root }}:/mirror:z,ro
-    environment:
-      - TZ={{ lcinfra_timezone }}
     healthcheck:
       test: ["CMD", "curl", "-sSf", "http://localhost/"]
       interval: 30s
@@ -29,8 +27,6 @@ services:
     volumes:
       - {{ mirror_root }}/{{ mirror }}:/mirror:Z
       - ./sync-{{ mirror }}.sh:/sync:Z,ro
-    environment:
-      - TZ={{ lcinfra_timezone }}
     healthcheck:
       test: ["CMD", "curl", "-sSf", "http://localhost/"]
       interval: 30s

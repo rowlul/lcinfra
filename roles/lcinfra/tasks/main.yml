@@ -20,3 +20,18 @@
 - name: Set timezone fact
   ansible.builtin.set_fact:
     lcinfra_timezone: "{{ tdctl_tz.stdout }}"
+
+- name: Set docker prune schedule facts
+  ansible.builtin.set_fact:
+    # should never overlap with rebuild
+    lcinfra_docker_prune_hour: "{{ lcinfra_docker_rebuild_hour + 1 }}"
+    lcinfra_docker_prune_minute: "{{ 60 | random }}"
+
+- name: Schedule docker image pruning daily
+  ansible.builtin.cron:
+    name: lcinfra prune dangling images
+    user: root
+    minute: "{{ lcinfra_docker_prune_minute }}"
+    hour: "{{ lcinfra_docker_prune_hour }}"
+    job: docker image prune -f
+    state: present

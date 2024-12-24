@@ -37,8 +37,7 @@
 
 - name: Schedule a sync for each mirror
   ansible.builtin.cron:
-    name: "{{ mirror }} repo sync"
-    cron_file: lcinfra-mirror-sync
+    name: "lcinfra {{ mirror }} repo sync"
     user: root
     minute: "{{ vars['mirror_' + mirror]['schedule']['minute'] | default(range(0, 60) | random) }}"
     hour: "{{ vars['mirror_' + mirror]['schedule']['hour'] | default(range(0, 24) | random) }}"
@@ -50,13 +49,15 @@
   loop_control:
     loop_var: mirror
 
+- name: Increment rebuild minute fact
+  ansible.builtin.set_fact:
+    lcinfra_docker_rebuild_minute: "{{ lcinfra_docker_rebuild_minute | int + 1 }}"
+
 - name: Schedule a daily cacheless image rebuild (update) daily
   ansible.builtin.cron:
-    name: rebuild no cache
-    cron_file: lcinfra-mirror-rebuild
+    name: lcinfra mirror rebuild
     user: root
-    special_time: daily
-    job: >-
-      docker compose --project-directory {{ mirror_project_src }} build --pull --no-cache &&
-      docker image prune -f
+    minute: "{{ lcinfra_docker_rebuild_minute }}"
+    hour: "{{ lcinfra_docker_rebuild_hour }}"
+    job: "docker compose --project-directory {{ mirror_project_src }} build --pull --no-cache"
     state: present

@@ -35,8 +35,7 @@
 
 - name: Schedule a certbot renewal every 12 hours
   ansible.builtin.cron:
-    name: certbot renewal
-    cron_file: lcinfra-proxy-certbot
+    name: lcinfra proxy certbot renewal
     user: root
     minute: "{{ 60 | random }}"
     hour: '*/12'
@@ -45,13 +44,15 @@
       docker compose --project-directory {{ proxy_project_src }} exec web nginx -s reload
     state: present
 
+- name: Increment rebuild minute fact
+  ansible.builtin.set_fact:
+    lcinfra_docker_rebuild_minute: "{{ lcinfra_docker_rebuild_minute | int + 1 }}"
+
 - name: Schedule a daily cacheless image rebuild (update) daily
   ansible.builtin.cron:
-    name: rebuild no cache
-    cron_file: lcinfra-proxy-rebuild
+    name: lcinfra proxy rebuild
     user: root
-    special_time: daily
-    job: >-
-      docker compose --project-directory {{ proxy_project_src }} build --pull --no-cache &&
-      docker image prune -f
+    minute: "{{ lcinfra_docker_rebuild_minute }}"
+    hour: "{{ lcinfra_docker_rebuild_hour }}"
+    job: "docker compose --project-directory {{ proxy_project_src }} build --pull --no-cache"
     state: present

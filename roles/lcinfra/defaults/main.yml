@@ -1,2 +1,6 @@
 ---
 lcinfra_infra_path: /srv/infra
+
+# to be incremented to ensure correct order
+lcinfra_docker_rebuild_minute: 0
+lcinfra_docker_rebuild_hour: 4

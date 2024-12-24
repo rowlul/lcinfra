@@ -49,3 +49,14 @@
   loop: "{{ mirror_list }}"
   loop_control:
     loop_var: mirror
+
+- name: Schedule a daily cacheless image rebuild (update) daily
+  ansible.builtin.cron:
+    name: rebuild no cache
+    cron_file: lcinfra-mirror-rebuild
+    user: root
+    special_time: daily
+    job: >-
+      docker compose --project-directory {{ mirror_project_src }} build --pull --no-cache &&
+      docker image prune -f
+    state: present

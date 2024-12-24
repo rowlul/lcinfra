@@ -44,3 +44,14 @@
       docker compose --project-directory {{ proxy_project_src }} run --rm certbot &&
       docker compose --project-directory {{ proxy_project_src }} exec web nginx -s reload
     state: present
+
+- name: Schedule a daily cacheless image rebuild (update) daily
+  ansible.builtin.cron:
+    name: rebuild no cache
+    cron_file: lcinfra-proxy-rebuild
+    user: root
+    special_time: daily
+    job: >-
+      docker compose --project-directory {{ proxy_project_src }} build --pull --no-cache &&
+      docker image prune -f
+    state: present
